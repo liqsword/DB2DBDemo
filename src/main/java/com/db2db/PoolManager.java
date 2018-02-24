@@ -19,10 +19,10 @@ public class PoolManager {
 			ds.setUrl("jdbc:mysql://" + System.getenv("dbhost") + ":3306/db2db");
 			ds.setUsername(System.getenv("dbuser"));
 			ds.setPassword(System.getenv("dbpassword"));
-			ds.setInitialSize(1);
-			ds.setMaxActive(5);
-			ds.setMaxIdle(2);
-			ds.setMinIdle(1);
+			ds.setInitialSize(3);
+			ds.setMaxActive(10);
+			ds.setMaxIdle(3);
+			ds.setMinIdle(2);
 			ds.setTestOnBorrow(true);
 //			Properties dbProperties = new Properties();
 //	        

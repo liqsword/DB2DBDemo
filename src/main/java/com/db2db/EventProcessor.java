@@ -3,6 +3,7 @@ package com.db2db;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.Properties;
 
@@ -50,7 +51,7 @@ public class EventProcessor implements IEventProcessor {
 		int messageCount = 0;
 		Connection con = null;
 		try {
-			con = PoolManager.getInstance().getConnection();
+			
 
 			for (EventData data : messages) {
 				System.out.println("SAMPLE (" + context.getPartitionId() + "," + data.getSystemProperties().getOffset()
@@ -67,14 +68,22 @@ public class EventProcessor implements IEventProcessor {
 				}
 
 				if (!GROUPID.equals(msg.optString("from"))) {
+					if(con == null)con = PoolManager.getInstance().getConnection();
 					PreparedStatement ps = null;
 					switch (msg.optString("action")) {
 					case "Add":
-						ps = con.prepareStatement("insert into tblTodo(id, item, status) values(?,?,?)");
-						ps.setString(1, msg.optString("id"));
-						ps.setString(2, msg.optString("item"));
-						ps.setString(3, msg.optString("status"));
-						ps.executeUpdate();
+						try {
+							ps = con.prepareStatement("insert into tblTodo(id, item, status) values(?,?,?)");
+							ps.setString(1, msg.optString("id"));
+							ps.setString(2, msg.optString("item"));
+							ps.setString(3, msg.optString("status"));
+							ps.executeUpdate();
+						}catch(SQLIntegrityConstraintViolationException de) {
+							System.out.println("ignore duplicated id - " + msg.opt("id"));
+						}catch(Exception e) {
+							System.out.println("Insert error handling - " + msg.toString() );
+							e.printStackTrace();
+						}
 						break;
 					case "Delete":
 						
@@ -95,7 +104,7 @@ public class EventProcessor implements IEventProcessor {
 						ps.close();
 				}
 
-				System.out.println(msg.opt("id"));
+				
 
 				this.checkpointBatchingCount++;
 				if ((checkpointBatchingCount % 5) == 0) {
@@ -110,7 +119,10 @@ public class EventProcessor implements IEventProcessor {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-
+			if(con!=null)
+				try {
+					con.close();
+				}catch(Exception e) {}
 		}
 		System.out.println("SAMPLE: Partition " + context.getPartitionId() + " batch size was " + messageCount
 				+ " for host " + context.getOwner());
