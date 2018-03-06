@@ -1,20 +1,21 @@
 # Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+这是一个结合nodeapp_db2db一起运行的独立的Java应用，也可部署运行于Azure webjob。主要功能是监听event hub的消息并同步到自己的mysql数据库里。这里以部署在Azure webjob为例，需要选完成nodeapp_db2db的部署。
 
 # Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+这里以手动部署为例，也可以配置VSTS实现CI/CD.
+1.	下载应用到本地
+```Bash
+git clone https://github.com/radezheng/DB2DBDemo
+cd DB2DBDemo
+mvn install
+```
+2.	将下载依赖和打包, 确认生成的jar包与run.bat文件里的一致。此时需要将生成的 jar包和run.bat一起，打包成zip文件，如myjob.zip。run.bat的内容：
+```Bash
+set PATH=%PATH%;"D:\Program Files\Java\jdk1.8.0_73\bin"
+java -cp DB2DB-1.0-SNAPSHOT-jar-with-dependencies.jar com.db2db.App
+```
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+3.	登录Azure portal, 分别将myjob.zip创建为webapp A与B的web作业。确保其成功启动后，部署完成。此时两应用的数据应能实现同步。
 
 # Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
-
-If you want to learn more about creating good readme files then refer the following [guidelines](https://www.visualstudio.com/en-us/docs/git/create-a-readme). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+详细架构请参见PPT描述
